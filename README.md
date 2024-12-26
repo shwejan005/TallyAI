@@ -1,7 +1,9 @@
 
 ---
 
-**Tally AI**
+**TALLY AI**
+
+
 
 **Tally AI** is an innovative, AI-powered calculator designed to provide quick and accurate calculations. Inspired by Apple Intelligence’s calculator, the goal of this project is to make advanced calculation capabilities accessible to everyone—not just Apple users. Built using Next.js for the front-end, Tally AI is still under development and evolving.
 
