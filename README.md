@@ -39,7 +39,7 @@ To run the project locally, follow these steps:
 
 3. **Run the backend** (FastAPI):
    ```bash
-   uvicorn main:app --reload
+   python main.py
    ```
 
 4. **Run the frontend**:
