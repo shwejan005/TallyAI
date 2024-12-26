@@ -1,27 +1,28 @@
+
 ---
 
 **Tally AI**
 
+**Tally AI** is an innovative, AI-powered calculator designed to provide quick and accurate calculations. Inspired by Apple Intelligence’s calculator, the goal of this project is to make advanced calculation capabilities accessible to everyone—not just Apple users. Built using Next.js for the front-end, Tally AI is still under development and evolving.
 
+### Features
 
-**Tally AI** is a fun hobby project aimed at providing an AI-powered calculator, similar to Apple Intelligence’s calculator, but accessible to everyone—not just Apple users. The project was built using Next.js for the front-end, and is currently still under development.
+- **AI-powered calculations**: Obtain instant results with minimal input.
+- **Canvas input**: Draw mathematical expressions directly onto the canvas.
+- **Drag-and-drop UI**: Easily manipulate expressions with a simple interface.
 
-## Features
-- **AI-powered calculations**: Get quick results with a click.
-- **Canvas input**: Use a drawing interface to input mathematical expressions.
-- **Basic UI**: A simple, drag-and-drop interface for the expressions.
+### Setup
 
-## Setup
+To run the project locally, follow these steps:
 
-To run the project locally:
-
-1. Clone the repository:
+1. **Clone the repository**:
    ```bash
    git clone https://github.com/yourusername/tally-ai.git
    cd tally-ai
    ```
 
-2. Install dependencies:
+2. **Install dependencies**:
+
    - For the **frontend** (Next.js):
      ```bash
      cd frontend
@@ -34,31 +35,32 @@ To run the project locally:
      pip install -r requirements.txt
      ```
 
-3. Run the backend (FastAPI):
+3. **Run the backend** (FastAPI):
    ```bash
    uvicorn main:app --reload
    ```
 
-4. Run the frontend:
+4. **Run the frontend**:
    ```bash
    cd frontend
    npm run dev
    ```
 
-## Usage
+### Usage
 
-Once the application is running, you can:
-- Draw mathematical expressions on the canvas.
-- Click "Run" to send the expression to the AI backend and get a result.
-- Use the "Reset" button to clear the canvas and start fresh.
+Once the application is up and running, you can:
 
-## Notes
+- **Draw mathematical expressions** on the canvas using the drawing interface.
+- **Click "Run"** to send the drawn expression to the AI backend and receive a result.
+- **Click "Reset"** to clear the canvas and start fresh.
 
-- This project is still in its early stages and the UI is very basic.
-- The results are returned quickly, but the overall design could use some polishing.
+### Notes
 
-## License
+- This project is currently in the early stages of development, and the user interface is still basic.
+- Results are returned quickly, but improvements to the design and overall user experience are planned for future updates.
 
-This project is open-source and available under the [MIT License](LICENSE).
+### License
+
+This project is open-source and is available under the [MIT License](LICENSE).
 
 ---
