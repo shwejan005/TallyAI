@@ -1,14 +1,16 @@
-import google.generativeai as gai
+
+
+import google.generativeai as genai
 import ast
 import json
 from PIL import Image
 from constants import GEMINI_API_KEY
 
-gai.configure(api_key=GEMINI_API_KEY)
-model = gai.GenerativeModel(model_name="gemini-1.5-pro-001")
+genai.configure(api_key=GEMINI_API_KEY)
 
-def analyze(img: Image, dict_of_vars: dict):
-    dict_of_vars_str = json.dumps(dict_of_vars, ensure_ascii=False)  # Corrected to use json.dumps
+def analyze_image(img: Image, dict_of_vars: dict):
+    model = genai.GenerativeModel(model_name="gemini-1.5-flash")
+    dict_of_vars_str = json.dumps(dict_of_vars, ensure_ascii=False)
     prompt = (
         f"You have been given an image with some mathematical expressions, equations, or graphical problems, and you need to solve them. "
         f"Note: Use the PEMDAS rule for solving mathematical expressions. PEMDAS stands for the Priority Order: Parentheses, Exponents, Multiplication and Division (from left to right), Addition and Subtraction (from left to right). Parentheses have the highest priority, followed by Exponents, then Multiplication and Division, and lastly Addition and Subtraction. "
@@ -30,21 +32,17 @@ def analyze(img: Image, dict_of_vars: dict):
         f"DO NOT USE BACKTICKS OR MARKDOWN FORMATTING. "
         f"PROPERLY QUOTE THE KEYS AND VALUES IN THE DICTIONARY FOR EASIER PARSING WITH Python's ast.literal_eval."
     )
-
+    response = model.generate_content([prompt, img])
+    print(response.text)
+    answers = []
     try:
-        response = model.generate_content(prompt=prompt)
-        print(response.text)
-
-        answers = []
-        try:
-            answers = ast.literal_eval(response.text)
-        except Exception as e:
-            print(f"Error in generating a response: {e}")
-        print(f"Answer: {answers}")
-        for answer in answers:
-            if 'assign' in answer:
-                answer['assign'] = True
-        return answers
+        answers = ast.literal_eval(response.text)
     except Exception as e:
-        print(f"Error in calling the Gemini model: {e}")
-        return []
+        print(f"Error in parsing response from Gemini API: {e}")
+    print('returned answer ', answers)
+    for answer in answers:
+        if 'assign' in answer:
+            answer['assign'] = True
+        else:
+            answer['assign'] = False
+    return answers

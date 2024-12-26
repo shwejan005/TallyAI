@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import axios from "axios"; // Fix: Import axios
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { ColorSwatch, Group } from "@mantine/core";
 import { SWATCHES } from "@/constants";
-import Draggable from "react-draggable";
 
 interface GeneratedResult {
   expression: string;
@@ -18,12 +17,40 @@ interface Response {
   assign: boolean;
 }
 
-/// <reference types="vite/client" />
+const Draggable = ({ children, defaultPosition }: any) => {
+  const [position, setPosition] = useState(defaultPosition);
 
-interface ImportMetaEnv {
-  readonly VITE_API_URL: string;
-}
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const offsetX = e.clientX - position.x;
+    const offsetY = e.clientY - position.y;
 
+    const handleMouseMove = (e: MouseEvent) => {
+      setPosition({ x: e.clientX - offsetX, y: e.clientY - offsetY });
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: position.y,
+        left: position.x,
+        cursor: "grab",
+      }}
+      onMouseDown={handleMouseDown}
+    >
+      {children}
+    </div>
+  );
+};
 
 const Page = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -69,8 +96,13 @@ const Page = () => {
         canvas.height = window.innerHeight - canvas.offsetTop;
         ctx.lineCap = "round";
         ctx.lineWidth = 3;
+
+        // Add white background
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
     }
+
     const script = document.createElement("script");
     script.src =
       "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML";
@@ -107,6 +139,8 @@ const Page = () => {
     if (canvas) {
       const ctx = canvas.getContext("2d");
       if (ctx) {
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height); // Add white background
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
     }
@@ -115,7 +149,6 @@ const Page = () => {
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (canvas) {
-      canvas.style.background = "white";
       const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.beginPath();
@@ -126,9 +159,8 @@ const Page = () => {
   };
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) {
-      return;
-    }
+    if (!isDrawing) return;
+
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext("2d");
@@ -146,59 +178,70 @@ const Page = () => {
 
   const runRoute = async () => {
     const canvas = canvasRef.current;
-
     if (canvas) {
-      const response = await axios({
-        method: "post",
-        url: `${process.env.NEXT_PUBLIC_API_URL}/calculate`,
-        data: {
-          image: canvas.toDataURL("image/png"),
-          dict_of_vars: dictOfVars,
-        },
-      });
+      const dataURL = canvas.toDataURL("image/png");
+      console.log("Canvas Data URL:", dataURL);
 
-      const resp = await response.data;
-      console.log("Response", resp);
-      resp.data.forEach((data: Response) => {
-        if (data.assign === true) {
-          setDictOfVars({
-            ...dictOfVars,
-            [data.expr]: data.result,
-          });
-        }
-      });
-
-      const ctx = canvas.getContext("2d");
-      const imageData = ctx!.getImageData(0, 0, canvas.width, canvas.height);
-      let minX = canvas.width,
-        minY = canvas.height,
-        maxX = 0,
-        maxY = 0;
-
-      for (let y = 0; y < canvas.height; y++) {
-        for (let x = 0; x < canvas.width; x++) {
-          const i = (y * canvas.width + x) * 4;
-          if (imageData.data[i + 3] > 0) {
-            minX = Math.min(minX, x);
-            minY = Math.min(minY, y);
-            maxX = Math.max(maxX, x);
-            maxY = Math.max(maxY, y);
-          }
-        }
+      if (!dataURL || dataURL === "data:,") {
+        console.error("Canvas is blank or empty.");
+        return;
       }
 
-      const centerX = (minX + maxX) / 2;
-      const centerY = (minY + maxY) / 2;
+      try {
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/calculate`,
+          {
+            image: dataURL,
+            dict_of_vars: dictOfVars,
+          }
+        );
 
-      setLatexPosition({ x: centerX, y: centerY });
-      resp.data.forEach((data: Response) => {
-        setTimeout(() => {
-          setResult({
-            expression: data.expr,
-            answer: data.result,
-          });
-        }, 1000);
-      });
+        const resp = response.data;
+        console.log("Response", resp);
+
+        resp.data.forEach((data: Response) => {
+          if (data.assign === true) {
+            setDictOfVars({
+              ...dictOfVars,
+              [data.expr]: data.result,
+            });
+          }
+        });
+
+        const ctx = canvas.getContext("2d");
+        const imageData = ctx!.getImageData(0, 0, canvas.width, canvas.height);
+        let minX = canvas.width,
+          minY = canvas.height,
+          maxX = 0,
+          maxY = 0;
+
+        for (let y = 0; y < canvas.height; y++) {
+          for (let x = 0; x < canvas.width; x++) {
+            const i = (y * canvas.width + x) * 4;
+            if (imageData.data[i + 3] > 0) {
+              minX = Math.min(minX, x);
+              minY = Math.min(minY, y);
+              maxX = Math.max(maxX, x);
+              maxY = Math.max(maxY, y);
+            }
+          }
+        }
+
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
+
+        setLatexPosition({ x: centerX, y: centerY });
+        resp.data.forEach((data: Response) => {
+          setTimeout(() => {
+            setResult({
+              expression: data.expr,
+              answer: data.result,
+            });
+          }, 1000);
+        });
+      } catch (error) {
+        console.error("Error calling API:", error);
+      }
     }
   };
 
@@ -215,7 +258,11 @@ const Page = () => {
         </Button>
         <Group className="z-20">
           {SWATCHES.map((swatch) => (
-            <ColorSwatch key={swatch} color={swatch} onClick={() => setColor(swatch)} />
+            <ColorSwatch
+              key={swatch}
+              color={swatch}
+              onClick={() => setColor(swatch)}
+            />
           ))}
         </Group>
         <Button
@@ -236,13 +283,8 @@ const Page = () => {
         onMouseUp={stopDrawing}
         onMouseOut={stopDrawing}
       />
-
       {latexExpression.map((latex, index) => (
-        <Draggable
-          key={index}
-          defaultPosition={latexPosition}
-          onStop={(e, data) => setLatexPosition({ x: data.x, y: data.y })}
-        >
+        <Draggable key={index} defaultPosition={latexPosition}>
           <div className="absolute p-2 text-white rounded shadow-md">
             <div className="latex-content">{latex}</div>
           </div>
