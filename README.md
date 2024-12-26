@@ -58,8 +58,8 @@ Once the application is up and running, you can:
 
 ### Notes
 
-- This project is currently in the early stages of development, and the user interface is still basic.
-- Results are returned quickly, but improvements to the design and overall user experience are planned for future updates.
+- This project was solely for better understanding of backend using python, and the user interface is still basic, so feel free to make any changes.
+- Results are returned quickly, but improvements to the design and overall user experience can be improvised.
 
 ### License
 
